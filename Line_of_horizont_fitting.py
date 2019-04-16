@@ -78,6 +78,33 @@ class Line_of_horizont_fitting:
         predict = model.predict(image[None,...])
 
         return predict[0]
+    
+    def horizont_line_from_binary_image(self, image, average_n_frame=1, rho = 2, theta = np.pi/180, threshold = 20, min_line_length = 20, 
+                                        max_line_gap = 5):
+        output = self.binary_edge_detection(image)
+        output = self.binary2gray(output)
+
+        rho = rho# distance resolution in pixels of the Hough grid
+        theta = theta # angular resolution in radians of the Hough grid
+        threshold = threshold     # minimum number of votes (intersections in Hough grid cell)
+        min_line_length = min_line_length #minimum number f pixels making up a line
+        max_line_gap = 5    # maximum gap in pixels between connectable line segments
+        lines=self.hough_lines(output, rho, theta, threshold, min_line_length, max_line_gap)
+        line_arr = np.squeeze(lines)
+        points = self.Collect_points(line_arr)
+
+        if(len(points)<2):
+            points= line_arr.reshape(lines.shape[0]*2,2)
+
+        if(len(points)>2):
+            fit_line = cv2.fitLine(np.float32(points), cv2.DIST_HUBER, 1, 0.001, 0.001)
+            self.line.append(fit_line)
+
+            if len(self.line) > 10:
+                fit_line = self.smoothing(self.line, average_n_frame)
+
+        return fit_line
+        
 
     def horizont_line_pipeline(self, image, model, img_w, img_h, average_n_frame, kernel_median_blur=50, predict_treshold=0.5,
                                rho = 2, theta = np.pi/180, threshold = 20, min_line_length = 20, max_line_gap = 5):
