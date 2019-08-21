@@ -111,10 +111,9 @@ class Line_of_horizont_fitting:
         or_image=image
 
         or_height, or_width, or_depth = or_image.shape
-
         image=self.inputNormalized(or_image,img_w,img_h)
-        predict = self.predict_segmentation(image,model)
-        predict = self.median_blur(predict,kernel_median_blur)
+        predict_segmentation = self.predict_segmentation(image,model)
+        predict = self.median_blur(predict_segmentation,kernel_median_blur)
         predict = self.get_binary_image(predict,predict_treshold)
         predict = self.resize_image(predict, or_width, or_height)
         output = self.binary_edge_detection(predict)
@@ -140,3 +139,38 @@ class Line_of_horizont_fitting:
                 fit_line = self.smoothing(self.line, average_n_frame)
 
         return fit_line, predict
+    
+    def horizont_line_pipeline_verbose(self, image, model, img_w, img_h, average_n_frame, kernel_median_blur=50, predict_treshold=0.5, rho = 2, theta = np.pi/180, threshold = 20, min_line_length = 20, max_line_gap = 5):
+        or_image=image
+
+        or_height, or_width, or_depth = or_image.shape
+        image=self.inputNormalized(or_image,img_w,img_h)
+        predict_segmentation = self.predict_segmentation(image,model)
+        predict = self.median_blur(predict_segmentation,kernel_median_blur)
+        predict = self.get_binary_image(predict,predict_treshold)
+        predict = self.resize_image(predict, or_width, or_height)
+        output = self.binary_edge_detection(predict)
+        output = self.binary2gray(output)
+
+        rho = rho# distance resolution in pixels of the Hough grid
+        theta = theta # angular resolution in radians of the Hough grid
+        threshold = threshold     # minimum number of votes (intersections in Hough grid cell)
+        min_line_length = min_line_length #minimum number f pixels making up a line
+        max_line_gap = 5    # maximum gap in pixels between connectable line segments
+        lines=self.hough_lines(output, rho, theta, threshold, min_line_length, max_line_gap)
+        line_arr = np.squeeze(lines)
+        points = self.Collect_points(line_arr)
+
+        if(len(points)<2):
+            points= line_arr.reshape(lines.shape[0]*2,2)
+
+        if(len(points)>2):
+            fit_line = cv2.fitLine(np.float32(points), cv2.DIST_HUBER, 1, 0.001, 0.001)
+            self.line.append(fit_line)
+
+            if len(self.line) > 10:
+                fit_line = self.smoothing(self.line, average_n_frame)
+        
+        pred_visual = predict_segmentation*255
+        pred_visual= np.uint8(np.concatenate((predict_segmentation,predict_segmentation,pred_visual),axis=2))
+        return fit_line, self.resize_image(predict_segmentation, or_width, or_height), self.resize_image(or_image, img_w, img_h), self.resize_image(pred_visual, img_w, img_h)

@@ -187,37 +187,74 @@ class Utils:
     
     
     @staticmethod
-    def test_speed_from_video(filename, model, inp_w, inp_h, steps=10):
+    def test_speed_from_video(filename, model, inp_w, inp_h, n_iteration, steps=1):
         lineofhorizont = Line_of_horizont_fitting()
         reader = imageio.get_reader(filename,  'ffmpeg')
         fps = reader.get_meta_data()['fps']
+        n_steps=0
+        frame_to_discard = 10
         now=time()
-        start_time=now
-        for i in range(steps):
-            elapsed_time = now - start_time
-            print(i, elapsed_time)
+        for i in range(n_iteration):
+            if i == frame_to_discard:
+                start_time=now
+            if i > frame_to_discard:
+                #n_steps+=1
+                elapsed_time = now - start_time
+                #print(n_steps, elapsed_time)
             or_image=reader.get_data(i)
             or_height, or_width, or_depth = or_image.shape
 
-            fit_line, predict=lineofhorizont.horizont_line_pipeline(or_image, model, inp_w, inp_h, 5)
+            fit_line, predict=lineofhorizont.horizont_line_pipeline(or_image, model, inp_w, inp_h, steps)
 
             predict = predict.reshape(or_height,or_width,1)
             predict1 = predict*255
             predict= np.uint8(np.concatenate((predict,predict,predict1),axis=2))
             imageOUT = cv2.bitwise_or(or_image,predict)
-            imageOUT=cv2.line(imageOUT, (int(fit_line[2]-fit_line[0]*or_width), int(fit_line[3]-fit_line[1]*or_width)),
-                              (int(fit_line[2]+fit_line[0]*or_width), int(fit_line[3]+fit_line[1]*or_width)), 
-                              (255, 0, 255), 20)
+            imageOUT=cv2.line(imageOUT, (int(fit_line[2]-fit_line[0]*or_height), int(fit_line[3]-fit_line[1]*or_width)), 
+                              (int(fit_line[2]+fit_line[0]*or_height), int(fit_line[3]+fit_line[1]*or_width)), 
+                              (255, 0, 255), 5)
             now=time()
+            
+        reader.close()
+        return ((i-frame_to_discard))/elapsed_time
     
     @staticmethod
-    def test_from_video(filename, model, inp_w, inp_h, steps=10):
+    def test_speed_from_video_v2(reader, model, inp_w, inp_h, n_iteration, steps=1):
+        n_steps=0
+        frame_to_discard = 10
+        now=time()
+        lineofhorizont = Line_of_horizont_fitting()
+        for i in range(n_iteration):
+            if i == frame_to_discard:
+                start_time=now
+            if i > frame_to_discard:
+                #n_steps+=1
+                elapsed_time = now - start_time
+                #print(n_steps, elapsed_time)
+            or_image=reader.get_data(i)
+            or_height, or_width, or_depth = or_image.shape
+
+            fit_line, predict=lineofhorizont.horizont_line_pipeline(or_image, model, inp_w, inp_h, steps)
+
+            predict = predict.reshape(or_height,or_width,1)
+            predict1 = predict*255
+            predict= np.uint8(np.concatenate((predict,predict,predict1),axis=2))
+            imageOUT = cv2.bitwise_or(or_image,predict)
+            imageOUT=cv2.line(imageOUT, (int(fit_line[2]-fit_line[0]*or_height), int(fit_line[3]-fit_line[1]*or_width)), 
+                              (int(fit_line[2]+fit_line[0]*or_height), int(fit_line[3]+fit_line[1]*or_width)), 
+                              (255, 0, 255), 5)
+            now=time()
+
+        return ((i-frame_to_discard))/elapsed_time
+    
+    @staticmethod
+    def test_from_video(filename, model, inp_w, inp_h, n_iteration, steps=1):
         lineofhorizont = Line_of_horizont_fitting()
         reader = imageio.get_reader(filename,  'ffmpeg')
         fps = reader.get_meta_data()['fps']
         now=time()
         start_time=now
-        for i in range(steps):
+        for i in range(n_iteration):
             elapsed_time = now - start_time
             print(i, elapsed_time)
             or_image=reader.get_data(i)
@@ -231,12 +268,13 @@ class Utils:
             predict1 = predict*255
             predict= np.uint8(np.concatenate((predict,predict,predict1),axis=2))
             imageOUT = cv2.bitwise_or(or_image,predict)
-            imageOUT=cv2.line(imageOUT, (int(fit_line[2]-fit_line[0]*or_width), int(fit_line[3]-fit_line[1]*or_width)),
-                              (int(fit_line[2]+fit_line[0]*or_width), int(fit_line[3]+fit_line[1]*or_width)), 
-                              (255, 0, 255), 20)
+            imageOUT=cv2.line(imageOUT, (int(fit_line[2]-fit_line[0]*or_height), int(fit_line[3]-fit_line[1]*or_width)), 
+                              (int(fit_line[2]+fit_line[0]*or_height), int(fit_line[3]+fit_line[1]*or_width)), 
+                              (255, 0, 255), 5)
             now=time()
             plt.imshow(imageOUT)
             plt.show()
+        reader.close()
 
     @staticmethod
     def test_from_folder(path, model, inp_w, inp_h, steps=1):
@@ -252,15 +290,15 @@ class Utils:
             or_image=cv2.cvtColor(or_image, cv2.COLOR_BGR2RGB)
             or_height, or_width, or_depth = or_image.shape
 
-            fit_line, predict=lineofhorizont.horizont_line_pipeline(or_image, model, inp_w, inp_h, steps)
+            fit_line, predict, img_inp_or, pred_inp_or=lineofhorizont.horizont_line_pipeline_verbose(or_image, model, inp_w, inp_h, steps)
 
             predict = predict.reshape(or_height,or_width,1)
             predict1 = predict*255
             predict= np.uint8(np.concatenate((predict,predict,predict1),axis=2))
             imageOUT = cv2.bitwise_or(or_image,predict)
-            imageOUT=cv2.line(imageOUT, (int(fit_line[2]-fit_line[0]*or_width), int(fit_line[3]-fit_line[1]*or_width)), 
-                              (int(fit_line[2]+fit_line[0]*or_width), int(fit_line[3]+fit_line[1]*or_width)), 
-                              (255, 0, 255), 20)
+            imageOUT=cv2.line(imageOUT, (int(fit_line[2]-fit_line[0]*or_height), int(fit_line[3]-fit_line[1]*or_width)), 
+                              (int(fit_line[2]+fit_line[0]*or_height), int(fit_line[3]+fit_line[1]*or_width)), 
+                              (255, 0, 255), 5)
             now=time()
-            plt.imshow(imageOUT)
-            plt.show()
+        
+            yield path_img, imageOUT, predict, img_inp_or, pred_inp_or
