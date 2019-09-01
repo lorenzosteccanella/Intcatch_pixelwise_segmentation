@@ -138,7 +138,7 @@ class Line_of_horizont_fitting:
             if len(self.line) > 10:
                 fit_line = self.smoothing(self.line, average_n_frame)
 
-        return fit_line, predict
+        return fit_line, self.resize_image(predict_segmentation, or_width, or_height)
     
     def horizont_line_pipeline_verbose(self, image, model, img_w, img_h, average_n_frame, kernel_median_blur=50, predict_treshold=0.5, rho = 2, theta = np.pi/180, threshold = 20, min_line_length = 20, max_line_gap = 5):
         or_image=image

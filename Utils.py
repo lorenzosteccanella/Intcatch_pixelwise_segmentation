@@ -107,8 +107,8 @@ class Utils:
 
             avg_y= int((y1+y2)/2)
 
-            annotation_image = label[avg_y-100:avg_y+100, 0:width]
-            pred_image = pred[avg_y-100:avg_y+100, 0:width]
+            annotation_image = label[avg_y-200:avg_y+200, 0:width]
+            pred_image = pred[avg_y-200:avg_y+200, 0:width]
 
             label=annotation_image
             pred=pred_image
@@ -121,7 +121,7 @@ class Utils:
             recall=True_pos/(True_pos+False_neg)
             specificity=1-(True_neg/(True_neg+False_pos))
             accuracy=(True_pos+True_neg)/(True_pos+True_neg+False_pos+False_neg)
-            f1score=2*(precision*recall)/(precision+recall)
+            f1score=2*((precision*recall)/(precision+recall))
 
             recall_list.append(recall)
             precision_list.append(precision)
@@ -166,7 +166,7 @@ class Utils:
             recall=True_pos/(True_pos+False_neg)
             specificity=1-(True_neg/(True_neg+False_pos))
             accuracy=(True_pos+True_neg)/(True_pos+True_neg+False_pos+False_neg)
-            f1score=2*(precision*recall)/(precision+recall)
+            f1score=2*((precision*recall)/(precision+recall))
             
             recall_list.append(recall)
             precision_list.append(precision)
