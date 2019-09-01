@@ -107,8 +107,8 @@ class Utils:
 
             avg_y= int((y1+y2)/2)
 
-            annotation_image = label[avg_y-200:avg_y+200, 0:width]
-            pred_image = pred[avg_y-200:avg_y+200, 0:width]
+            annotation_image = label[avg_y-100:avg_y+100, 0:width]
+            pred_image = pred[avg_y-100:avg_y+100, 0:width]
 
             label=annotation_image
             pred=pred_image
@@ -296,9 +296,18 @@ class Utils:
             predict1 = predict*255
             predict= np.uint8(np.concatenate((predict,predict,predict1),axis=2))
             imageOUT = cv2.bitwise_or(or_image,predict)
-            imageOUT=cv2.line(imageOUT, (int(fit_line[2]-fit_line[0]*or_height), int(fit_line[3]-fit_line[1]*or_width)), 
-                              (int(fit_line[2]+fit_line[0]*or_height), int(fit_line[3]+fit_line[1]*or_width)), 
-                              (255, 0, 255), 5)
+            
+            #(x0-m*vx[0], y0-m*vy[0]), (x0+m*vx[0], y0+m*vy[0])
+            
+            W = or_width 
+            H = or_height
+            
+            x0 = (int(fit_line[2]-(W*fit_line[0])))
+            x1 = (int(fit_line[2]+(W*fit_line[0])))
+            y0 = (int(fit_line[3]-(H*fit_line[1])))
+            y1 = (int(fit_line[3]+(H*fit_line[1])))
+            
+            imageOUT=cv2.line(imageOUT, (x0,y0), (x1,y1), (255, 0, 255), 5)
             now=time()
         
             yield path_img, imageOUT, predict, img_inp_or, pred_inp_or

@@ -98,10 +98,10 @@ class Line_of_horizont_fitting:
 
         if(len(points)>2):
             fit_line = cv2.fitLine(np.float32(points), cv2.DIST_HUBER, 1, 0.001, 0.001)
-            self.line.append(fit_line)
+            #self.line.append(fit_line)
 
-            if len(self.line) > 10:
-                fit_line = self.smoothing(self.line, average_n_frame)
+            #if len(self.line) > 10:
+            #    fit_line = self.smoothing(self.line, average_n_frame)
 
         return fit_line
         
@@ -133,10 +133,10 @@ class Line_of_horizont_fitting:
 
         if(len(points)>2):
             fit_line = cv2.fitLine(np.float32(points), cv2.DIST_HUBER, 1, 0.001, 0.001)
-            self.line.append(fit_line)
+            #self.line.append(fit_line)
 
-            if len(self.line) > 10:
-                fit_line = self.smoothing(self.line, average_n_frame)
+            #if len(self.line) > 10:
+            #    fit_line = self.smoothing(self.line, average_n_frame)
 
         return fit_line, self.resize_image(predict_segmentation, or_width, or_height)
     
@@ -166,10 +166,10 @@ class Line_of_horizont_fitting:
 
         if(len(points)>2):
             fit_line = cv2.fitLine(np.float32(points), cv2.DIST_HUBER, 1, 0.001, 0.001)
-            self.line.append(fit_line)
+            #self.line.append(fit_line)
 
-            if len(self.line) > 10:
-                fit_line = self.smoothing(self.line, average_n_frame)
+            #if len(self.line) > 10:
+            #    fit_line = self.smoothing(self.line, average_n_frame)
         
         pred_visual = predict_segmentation*255
         pred_visual= np.uint8(np.concatenate((predict_segmentation,predict_segmentation,pred_visual),axis=2))
